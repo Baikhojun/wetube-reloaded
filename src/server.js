@@ -1,52 +1,56 @@
 import express from "express";
+import morgan from "morgan";
 
 const PORT = 4000;
 
 const app = express();
+const logger = morgan("dev");
+app.use(logger);
 
-const handleHome = (req, res, next) => {
-  return res.send("i love to");
-};
-
-const handleAbout = (req, res) => {
-  return res.send("handleAbout");
-};
-
-const handleContact = (req, res) => {
-  return res.send("handleContact");
-};
-
-const handleLogin = (req, res) => {
-  return res.send("handleLogin");
-};
-
-const logger = (req, res, next) => {
-  console.log("I love middle !"+`${req.method}  ${req.url}`);
-  next();  // 이게 Controller Middleware 가 될수있다, But 함수가 next를 호출하면 Middleware이다 .
-};
-
-const privateMiddleware = (req ,res, next ) => {
-  const url = req.url;
-  if(url === "/protected"){
-    return res.send("<h1>Not Allowed</h1>");
-  }
-  console.log("Allowed, you may continue.");
-  next();
-};
-
-const handleProtected = ( req, res) => {
-  return res.send("Welcome to the private lounge");
-};
-
-app.use(logger); // Global Middleware Create : 어떤 Url 에도 작동하는
-app.use(privateMiddleware);
-app.get("/",handleHome);
-app.get("/protected", handleProtected);
+const globalRouter = express.Router();
+const handleHome = (req, res) => res.send("Home");
+globalRouter.get("/", handleHome);
+const handleTrending = (req, res) => res.send("Trending");
+globalRouter.get("/trending", handleTrending);
+const handleNew = (req, res) => res.send("New");
+globalRouter.get("/new", handleNew);
+const handleJoin = (req, res) => res.send("Join");
+globalRouter.get("/join", handleJoin);
+const handleLogin = (req, res) => res.send("Login");
+globalRouter.get("/login", handleLogin);
 
 
-app.get("/about", handleAbout);
-app.get("/contact", handleContact);
-app.get("/login", handleLogin);
-const handleListening = () => console.log(`http://localhhost:${PORT}`);
+const userRouter = express.Router();
+
+const handleUser = (req, res) => res.send("Users");
+userRouter.get("/", handleUser);
+const handleUserEditProfile = (req, res) => res.send("Users Edit Profile");
+userRouter.get("/edit-profile", handleUserEditProfile);
+const handleUserID = (req, res) => res.send(`User ID : ${req.params.id}`);
+userRouter.get("/:id", handleUserID);
+
+
+
+
+
+
+
+const storyRouter  = express.Router();
+
+const handleStoriesEdit = (req, res) => res.send("Storeies Edit");
+const handleStoriesDelete = (req, res) => res.send("Storeies Delete");
+
+storyRouter.get("/:id", handleUserID);
+storyRouter.get("/:id/edit", handleStoriesEdit);
+storyRouter.get("/:id/delete", handleStoriesDelete);
+
+
+
+app.use("/", globalRouter);
+app.use("/stories", storyRouter );
+app.use("/users", userRouter);
+
+
+const handleListening = () => console.log(`http://localhost:${PORT}`);
 
 app.listen(PORT, handleListening);
